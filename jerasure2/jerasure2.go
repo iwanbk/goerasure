@@ -2,30 +2,30 @@ package jerasure2
 
 // #include <stdlib.h>
 // #include <jerasure.h>
-// #include <reed_sol.h>
+// #include <jerasure/reed_sol.h>
 // #cgo CFLAGS: -I /usr/include/jerasure/
 // #cgo LDFLAGS: -lJerasure
 import "C"
 
 import (
-	"unsafe"
 	"errors"
+	"unsafe"
 )
 
 var ErrInvalidBlocksize = errors.New("Invalid blockSize")
 
 type Context struct {
-	k int
-	m int
-	w int
-	dataSlices [][]byte
-	data [](*C.char)
+	k            int
+	m            int
+	w            int
+	dataSlices   [][]byte
+	data         [](*C.char)
 	codingSlices [][]byte
-	coding [](*C.char)
-	inputSize int
-	blockSize int
-	codingSize int
-	matrix (*C.int)
+	coding       [](*C.char)
+	inputSize    int
+	blockSize    int
+	codingSize   int
+	matrix       (*C.int)
 }
 
 func fill(slice []byte, value byte) {
@@ -34,7 +34,7 @@ func fill(slice []byte, value byte) {
 	}
 }
 
-func NewContext(k int, m int) (*Context) {
+func NewContext(k int, m int) *Context {
 	self := Context{}
 	self.k = k
 	self.m = m
@@ -43,7 +43,7 @@ func NewContext(k int, m int) (*Context) {
 	self.data = make([](*C.char), k)
 	self.codingSlices = make([][]byte, m)
 	self.coding = make([](*C.char), m)
-	self.matrix = C.reed_sol_vandermonde_coding_matrix(C.int(self.k), C.int(self.m), C.int(self.w));
+	self.matrix = C.reed_sol_vandermonde_coding_matrix(C.int(self.k), C.int(self.m), C.int(self.w))
 	return &self
 }
 
@@ -52,7 +52,7 @@ func (self *Context) DeleteContext() {
 }
 
 func (self *Context) SetDataSize(dataSize int) {
-	self.inputSize = dataSize;
+	self.inputSize = dataSize
 	self.blockSize = (dataSize + (self.k - 1)) / self.k
 	self.codingSize = self.blockSize * self.m
 }
@@ -62,7 +62,7 @@ func (self *Context) RoundDataSize(inputSize int) int {
 }
 
 func (self *Context) GetCodingSize() int {
-	return self.codingSize;
+	return self.codingSize
 }
 
 func (self *Context) GetBlockSize() int {
@@ -109,7 +109,7 @@ func (self *Context) Encode(blockSize int) error {
 	if blockSize == 0 {
 		blockSize = self.blockSize
 	}
-	C.jerasure_matrix_encode(C.int(self.k), C.int(self.m), C.int(self.w), self.matrix, (**C.char)(unsafe.Pointer(&self.data[0])), (**C.char)(unsafe.Pointer(&self.coding[0])), C.int(blockSize));
+	C.jerasure_matrix_encode(C.int(self.k), C.int(self.m), C.int(self.w), self.matrix, (**C.char)(unsafe.Pointer(&self.data[0])), (**C.char)(unsafe.Pointer(&self.coding[0])), C.int(blockSize))
 	return nil
 }
 
@@ -120,8 +120,6 @@ func (self *Context) Decode(erasures []int, blockSize int) error {
 	if blockSize == 0 {
 		blockSize = self.blockSize
 	}
-	C.jerasure_matrix_decode(C.int(self.k), C.int(self.m), C.int(self.w), self.matrix, 1, (*C.int)(unsafe.Pointer(&erasures[0])), (**C.char)(unsafe.Pointer(&self.data[0])), (**C.char)(unsafe.Pointer(&self.coding[0])), C.int(blockSize));
+	C.jerasure_matrix_decode(C.int(self.k), C.int(self.m), C.int(self.w), self.matrix, 1, (*C.int)(unsafe.Pointer(&erasures[0])), (**C.char)(unsafe.Pointer(&self.data[0])), (**C.char)(unsafe.Pointer(&self.coding[0])), C.int(blockSize))
 	return nil
 }
-
-

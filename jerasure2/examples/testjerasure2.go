@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/arneto/jerasure2"
 	"fmt"
+	"github.com/iwanbk/goerasure/jerasure2"
 )
 
 func fill(slice []byte, value byte) {
@@ -28,7 +28,7 @@ func main() {
 	dataSize := ctx.RoundDataSize(BUFFERSIZE)
 	codingSize := ctx.GetCodingSize()
 	blockSize := ctx.GetBlockSize()
-	
+
 	// Make data-slices, coding-slices, bind slices to context
 	data := make([]byte, dataSize)
 	dataSlices := make([][]byte, K)
@@ -48,14 +48,14 @@ func main() {
 		codingSlices[i] = slice
 		ctx.SetCodingSlice(slice, i)
 	}
-	
+
 	buffer1 := []byte("The quick brown fox jumps over the lazy dog 12345")
 	buffer2 := []byte("Don't call us child, we'll call you!")
 	buffer3 := []byte("This is one small step for a man, one giant leap for mankind.")
 
 	var t ticket
 	offset := ctx.PutData(buffer1, 0)
-	t.offset = offset // keep offset of second message
+	t.offset = offset       // keep offset of second message
 	t.length = len(buffer2) // keep real length of second message
 	offset += ctx.PutData(buffer2, offset)
 	offset += ctx.PutData(buffer3, offset)
@@ -64,7 +64,7 @@ func main() {
 		slice := dataSlices[i]
 		fmt.Printf("D%v <%v>\n", i, string(slice[:offset]))
 	}
-	
+
 	fmt.Println("encode...")
 	totalLen := offset
 	ctx.Encode(totalLen)
