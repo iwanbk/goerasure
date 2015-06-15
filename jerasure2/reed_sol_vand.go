@@ -51,7 +51,10 @@ func prepareFragmentsForEncode(k, m, w int, data []byte) ([][]byte, [][]byte, in
 			copySize = dataLen
 		}
 		if dataLen > 0 {
-			copy(encodedData[i], data[cursor:cursor+copySize])
+			to := make([]byte, copySize)
+			copied := copy(to, data[cursor:cursor+copySize])
+			fmt.Printf("copy i = %v, cursor = %v, copySize=%v, len (data) = %v, copied=%v\n", i, cursor, copySize, len(data), copied)
+			encodedData[i] = to
 		}
 		cursor += copySize
 		dataLen -= copySize
@@ -79,11 +82,25 @@ func (rsv ReedSolVand) Decode(encodedData, encodedParity [][]byte, blockSize int
 func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
 	encodedData, encodedParity, blockSize := prepareFragmentsForEncode(rsv.k, rsv.m, rsv.w, data)
 
+	ed := make([](*C.char), rsv.k)
+	fmt.Printf("k = %v, len ed = %v\n", rsv.k, len(ed))
+	for i, v := range encodedData {
+		fmt.Printf("idx = %v v=%v, len v = %d\n", i, string(v), len(v))
+		//v := []byte("hai")
+		ed[i] = (*C.char)(unsafe.Pointer(&v[0]))
+	}
+
+	ep := make([](*C.char), rsv.m)
+	for k, v := range encodedParity {
+		v = make([]byte, blockSize)
+		ep[k] = (*C.char)(unsafe.Pointer(&v[0]))
+	}
+
 	fmt.Printf("blockSize = %v\n", blockSize)
 	C.jerasure_matrix_encode(C.int(rsv.k), C.int(rsv.m), C.int(rsv.w),
 		rsv.matrix,
-		(**C.char)(unsafe.Pointer(&encodedData[0])),
-		(**C.char)(unsafe.Pointer(&encodedParity[0])),
+		(**C.char)(unsafe.Pointer(&ed[0])),
+		(**C.char)(unsafe.Pointer(&ep[0])),
 		C.int(blockSize))
 	return encodedData, encodedParity, blockSize, nil
 }
