@@ -7,7 +7,10 @@ import (
 )
 
 func TestReedSolVand(t *testing.T) {
-	origData := []byte("The quick brown fox jumps over the lazy dog 12345")
+	var origData []byte
+	for i := 0; i < 128; i++ {
+		origData = append(origData, []byte("aa")...)
+	}
 	rsv := NewReedSolVand(16, 4)
 	encodedData, encodedParity, blockSize, _ := rsv.Encode(origData)
 	log.Printf("blockSize = %v\n", blockSize)
