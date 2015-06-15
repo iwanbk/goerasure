@@ -57,8 +57,8 @@ func prepareFragmentsForEncode(k, m, w int, data []byte) ([][]byte, [][]byte, in
 		}
 		if dataLen > 0 {
 			to := make([]byte, payloadSize)
-			copied := copy(to, data[cursor:cursor+copySize])
-			fmt.Printf("copy i = %v, cursor = %v, copySize=%v, len (data) = %v, copied=%v\n", i, cursor, copySize, len(data), copied)
+			copy(to, data[cursor:cursor+copySize])
+			//fmt.Printf("copy i = %v, cursor = %v, copySize=%v, len (data) = %v, copied=%v\n", i, cursor, copySize, len(data), copied)
 			encodedData[i] = to
 		}
 		cursor += copySize
@@ -72,19 +72,24 @@ func prepareFragmentsForDecode(k, m int, encodedData, encodedParity [][]byte, mi
 }
 
 // Decode decodes data
-func (rsv ReedSolVand) Decode(encodedData, encodedParity [][]byte, blockSize int) []byte {
+func (rsv ReedSolVand) Decode(encodedData, encodedParity []*C.char, blockSize int) []byte {
 	var data []byte
-	missingIDs := []int{}
+	missingIDs := []int{1, 2, 3}
 
 	// fill mising IDs
 
-	C.jerasure_matrix_decode(C.int(rsv.k), C.int(rsv.m), C.int(rsv.w), rsv.matrix, 1, (*C.int)(unsafe.Pointer(&missingIDs[0])), (**C.char)(unsafe.Pointer(&data[0])), (**C.char)(unsafe.Pointer(&encodedParity[0])), C.int(blockSize))
+	C.jerasure_matrix_decode(C.int(rsv.k), C.int(rsv.m), C.int(rsv.w),
+		rsv.matrix, 1,
+		(*C.int)(unsafe.Pointer(&missingIDs[0])),
+		(**C.char)(unsafe.Pointer(&encodedData[0])),
+		(**C.char)(unsafe.Pointer(&encodedParity[0])),
+		C.int(blockSize))
 	return nil
 	return data
 }
 
 // Encode encodes data using reed solomon
-func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
+func (rsv ReedSolVand) Encode(data []byte) ([]*C.char, []*C.char, int, error) {
 	encodedData, encodedParity, blockSize := prepareFragmentsForEncode(rsv.k, rsv.m, rsv.w, data)
 
 	ed := make([](*C.char), rsv.k)
@@ -103,5 +108,5 @@ func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
 		(**C.char)(unsafe.Pointer(&ed[0])),
 		(**C.char)(unsafe.Pointer(&ep[0])),
 		C.int(blockSize))
-	return encodedData, encodedParity, blockSize, nil
+	return ep, ed, blockSize, nil
 }
