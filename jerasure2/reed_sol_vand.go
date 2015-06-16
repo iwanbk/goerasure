@@ -69,7 +69,7 @@ func prepareDataForEncode(k, m, w int, data []byte) ([][]byte, int) {
 }
 
 // Encode encodes data using reed solomon
-func (rsv ReedSolVand) Encode(data []byte) ([]*C.char, []*C.char, int, error) {
+func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
 	encodedData, blockSize := prepareDataForEncode(rsv.k, rsv.m, rsv.w, data)
 
 	ed := make([](*C.char), rsv.k)
@@ -88,30 +88,40 @@ func (rsv ReedSolVand) Encode(data []byte) ([]*C.char, []*C.char, int, error) {
 		(**C.char)(unsafe.Pointer(&ed[0])),
 		(**C.char)(unsafe.Pointer(&ep[0])),
 		C.int(blockSize))
-	return ed, ep, blockSize, nil
+
+	// convert to []byte
+	edBytes := make([][]byte, rsv.k)
+	for i, v := range ed {
+		edBytes[i] = C.GoBytes(unsafe.Pointer(v), C.int(blockSize))
+	}
+	epBytes := make([][]byte, rsv.m)
+	for i, v := range ep {
+		epBytes[i] = C.GoBytes(unsafe.Pointer(v), C.int(blockSize))
+	}
+	return edBytes, epBytes, blockSize, nil
 }
 
 // Decode decodes data
-func (rsv ReedSolVand) Decode(encodedData, encodedParity [](*C.char), blockSize int, missingIDs []int) []byte {
+func (rsv ReedSolVand) Decode(encodedData, encodedParity [][]byte, blockSize int, missingIDs []int) []byte {
 	var data []byte
 
-	fmt.Printf("k=%v,m=%v\n", rsv.k, rsv.m)
-	/*for _, v := range encodedData {
-		fmt.Printf("len = %v\n", len(C.GoString(v)))
+	ed := make([](*C.char), rsv.k)
+	for i, v := range encodedData {
+		ed[i] = (*C.char)(unsafe.Pointer(&v[0]))
 	}
-	fmt.Printf("hello")
-	for _, v := range encodedParity {
-		fmt.Printf("len = %v\n", len(C.GoString(v)))
-	}*/
+	ep := make([](*C.char), rsv.m)
+	for i, v := range encodedParity {
+		ep[i] = (*C.char)(unsafe.Pointer(&v[0]))
+	}
 
 	C.jerasure_matrix_decode(C.int(rsv.k), C.int(rsv.m), C.int(rsv.w),
 		rsv.matrix, 1,
 		(*C.int)(unsafe.Pointer(&missingIDs[0])),
-		(**C.char)(unsafe.Pointer(&encodedData[0])),
-		(**C.char)(unsafe.Pointer(&encodedParity[0])),
+		(**C.char)(unsafe.Pointer(&ed[0])),
+		(**C.char)(unsafe.Pointer(&ep[0])),
 		C.int(blockSize))
 
-	for _, d := range encodedData {
+	for _, d := range ed {
 		data = append(data, C.GoBytes(unsafe.Pointer(d), C.int(blockSize))...)
 	}
 	return data

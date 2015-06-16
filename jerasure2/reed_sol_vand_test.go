@@ -15,7 +15,9 @@ func TestReedSolVand(t *testing.T) {
 	encodedData, encodedParity, blockSize, _ := rsv.Encode(origData)
 	log.Printf("blockSize = %v\n", blockSize)
 	// fill mising IDs
-	missingIDs := []int{0, rsv.k, -1}
+	missingIDs := []int{0, rsv.k - 1, -1}
+	encodedData[0] = make([]byte, blockSize)
+	encodedData[rsv.k-1] = make([]byte, blockSize)
 
 	recoveredData := rsv.Decode(encodedData, encodedParity, blockSize, missingIDs)
 
