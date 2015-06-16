@@ -58,9 +58,9 @@ func prepareDataForEncode(k, m, w int, data []byte) ([][]byte, int) {
 		if dataLen > 0 {
 			to := make([]byte, payloadSize)
 			copy(to, data[cursor:cursor+copySize])
-			//fmt.Printf("copy i = %v, cursor = %v, copySize=%v, len (data) = %v, copied=%v\n", i, cursor, copySize, len(data), copied)
+			//fmt.Printf("copy i = %v, cursor = %v, copySize=%v, len (data) = %v\n", i, cursor, copySize, len(data))
 			encodedData[i] = to
-			//fmt.Printf("len to = %v\n", len(to))
+			//fmt.Printf("len to = %v, dataLen=%v\n", len(to), dataLen)
 		}
 		cursor += copySize
 		dataLen -= copySize
@@ -72,6 +72,7 @@ func prepareDataForEncode(k, m, w int, data []byte) ([][]byte, int) {
 func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
 	encodedData, blockSize := prepareDataForEncode(rsv.k, rsv.m, rsv.w, data)
 
+	// convert encoded data to []*C.char
 	ed := make([](*C.char), rsv.k)
 	for i, v := range encodedData {
 		ed[i] = (*C.char)(unsafe.Pointer(&v[0]))
@@ -89,7 +90,7 @@ func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
 		(**C.char)(unsafe.Pointer(&ep[0])),
 		C.int(blockSize))
 
-	// convert to []byte
+	// convert back to  [][]byte
 	edBytes := make([][]byte, rsv.k)
 	for i, v := range ed {
 		edBytes[i] = C.GoBytes(unsafe.Pointer(v), C.int(blockSize))

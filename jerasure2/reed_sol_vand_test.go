@@ -8,7 +8,7 @@ import (
 
 func TestReedSolVand(t *testing.T) {
 	var origData []byte
-	for i := 0; i < 128; i++ {
+	for i := 0; i < 124; i++ {
 		origData = append(origData, []byte("aa")...)
 	}
 	rsv := NewReedSolVand(16, 4)
@@ -21,7 +21,7 @@ func TestReedSolVand(t *testing.T) {
 
 	recoveredData := rsv.Decode(encodedData, encodedParity, blockSize, missingIDs)
 
-	if !reflect.DeepEqual(origData, recoveredData) {
+	if !reflect.DeepEqual(origData, recoveredData[:len(origData)]) {
 		t.Fatalf("failed to decode data")
 	}
 }
