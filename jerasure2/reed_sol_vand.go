@@ -19,12 +19,13 @@ type ReedSolVand struct {
 }
 
 func NewReedSolVand(k, m int) ReedSolVand {
-	return ReedSolVand{
-		matrix: C.reed_sol_vandermonde_coding_matrix(C.int(k), C.int(m), C.int(8)),
-		k:      k,
-		m:      m,
-		w:      8,
+	rsv := ReedSolVand{
+		k: k,
+		m: m,
+		w: 8,
 	}
+	rsv.matrix = C.reed_sol_vandermonde_coding_matrix(C.int(k), C.int(m), C.int(rsv.w))
+	return rsv
 }
 
 func ceill(f float64) int {
@@ -72,9 +73,9 @@ func prepareFragmentsForDecode(k, m int, encodedData, encodedParity [][]byte, mi
 }
 
 // Decode decodes data
-func (rsv ReedSolVand) Decode(encodedData, encodedParity []*C.char, blockSize int) []byte {
+func (rsv ReedSolVand) Decode(encodedData, encodedParity [](*C.char), blockSize int) []byte {
 	var data []byte
-	missingIDs := []int{1, 2, 3}
+	missingIDs := []int{0, rsv.k, -1}
 
 	// fill mising IDs
 
