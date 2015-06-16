@@ -14,8 +14,10 @@ func TestReedSolVand(t *testing.T) {
 	rsv := NewReedSolVand(16, 4)
 	encodedData, encodedParity, blockSize, _ := rsv.Encode(origData)
 	log.Printf("blockSize = %v\n", blockSize)
+	// fill mising IDs
+	missingIDs := []int{0, rsv.k, -1}
 
-	recoveredData := rsv.Decode(encodedData, encodedParity, blockSize)
+	recoveredData := rsv.Decode(encodedData, encodedParity, blockSize, missingIDs)
 
 	if !reflect.DeepEqual(origData, recoveredData) {
 		t.Fatalf("failed to decode data")
