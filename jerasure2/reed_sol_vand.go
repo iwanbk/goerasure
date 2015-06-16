@@ -61,6 +61,7 @@ func prepareFragmentsForEncode(k, m, w int, data []byte) ([][]byte, [][]byte, in
 			copy(to, data[cursor:cursor+copySize])
 			//fmt.Printf("copy i = %v, cursor = %v, copySize=%v, len (data) = %v, copied=%v\n", i, cursor, copySize, len(data), copied)
 			encodedData[i] = to
+			fmt.Printf("len to = %v\n", len(to))
 		}
 		cursor += copySize
 		dataLen -= copySize
@@ -68,16 +69,20 @@ func prepareFragmentsForEncode(k, m, w int, data []byte) ([][]byte, [][]byte, in
 	return encodedData, encodedParity, blockSize
 }
 
-func prepareFragmentsForDecode(k, m int, encodedData, encodedParity [][]byte, missingIDs []int) {
-
-}
-
 // Decode decodes data
 func (rsv ReedSolVand) Decode(encodedData, encodedParity [](*C.char), blockSize int) []byte {
 	var data []byte
 	missingIDs := []int{0, rsv.k, -1}
 
+	fmt.Printf("k=%v,m=%v\n", rsv.k, rsv.m)
 	// fill mising IDs
+	for _, v := range encodedData {
+		fmt.Printf("len = %v\n", len(C.GoString(v)))
+	}
+	fmt.Printf("hello")
+	for _, v := range encodedParity {
+		fmt.Printf("len = %v\n", len(C.GoString(v)))
+	}
 
 	C.jerasure_matrix_decode(C.int(rsv.k), C.int(rsv.m), C.int(rsv.w),
 		rsv.matrix, 1,
@@ -85,7 +90,10 @@ func (rsv ReedSolVand) Decode(encodedData, encodedParity [](*C.char), blockSize 
 		(**C.char)(unsafe.Pointer(&encodedData[0])),
 		(**C.char)(unsafe.Pointer(&encodedParity[0])),
 		C.int(blockSize))
-	return nil
+
+	for _, d := range encodedData {
+		data = append(data, C.GoBytes(unsafe.Pointer(d), C.int(blockSize))...)
+	}
 	return data
 }
 
@@ -109,5 +117,5 @@ func (rsv ReedSolVand) Encode(data []byte) ([]*C.char, []*C.char, int, error) {
 		(**C.char)(unsafe.Pointer(&ed[0])),
 		(**C.char)(unsafe.Pointer(&ep[0])),
 		C.int(blockSize))
-	return ep, ed, blockSize, nil
+	return ed, ep, blockSize, nil
 }
