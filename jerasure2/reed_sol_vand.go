@@ -7,7 +7,7 @@ package jerasure2
 import "C"
 
 import (
-	"fmt"
+	//"fmt"
 	"unsafe"
 )
 
@@ -31,24 +31,24 @@ func NewReedSolVand(k, m int) ReedSolVand {
 func ceill(f float64) int {
 	return int(f + 0.9)
 }
+
 func getAlignedDataSize(k, w int, dataLen int) int {
 	wordSize := w / 8
 	alignmentMultiple := k * wordSize
 	return ceill(float64(dataLen)/float64(alignmentMultiple)) * alignmentMultiple
 }
 
-func prepareDataForEncode(k, m, w int, data []byte) ([][]byte, int) {
-	encodedData := make([][]byte, k)
-
+func prepareDataForEncode(k, m, w int, data []byte) ([](*C.char), [](*C.char), int) {
 	// Calculate data sizes, aligned_data_len guaranteed to be divisible by k
 	dataLen := len(data)
 	alignedDataLen := getAlignedDataSize(k, w, dataLen)
 
 	blockSize := alignedDataLen / k
-	//blockSize := (dataLen + (k - 1)) / k
 	payloadSize := blockSize
-	fmt.Printf("dataLen = %v, alignedDataLen=%v, blockSize=%v,payloadSize=%v\n", dataLen, alignedDataLen, blockSize, payloadSize)
+	//fmt.Printf("dataLen = %v, alignedDataLen=%v, blockSize=%v,payloadSize=%v\n", dataLen, alignedDataLen, blockSize, payloadSize)
 
+	// prepare encoded data
+	encodedData := make([](*C.char), k)
 	cursor := 0
 	for i := 0; i < k; i++ {
 		copySize := payloadSize
@@ -59,30 +59,26 @@ func prepareDataForEncode(k, m, w int, data []byte) ([][]byte, int) {
 			to := make([]byte, payloadSize)
 			copy(to, data[cursor:cursor+copySize])
 			//fmt.Printf("copy i = %v, cursor = %v, copySize=%v, len (data) = %v\n", i, cursor, copySize, len(data))
-			encodedData[i] = to
+			encodedData[i] = (*C.char)(unsafe.Pointer(&to[0]))
 			//fmt.Printf("len to = %v, dataLen=%v\n", len(to), dataLen)
 		}
 		cursor += copySize
 		dataLen -= copySize
 	}
-	return encodedData, blockSize
+
+	// prepare encoded parity
+	ep := make([](*C.char), m)
+	for k := 0; k < m; k++ {
+		v := make([]byte, blockSize)
+		ep[k] = (*C.char)(unsafe.Pointer(&v[0]))
+	}
+
+	return encodedData, ep, blockSize
 }
 
 // Encode encodes data using reed solomon
 func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
-	encodedData, blockSize := prepareDataForEncode(rsv.k, rsv.m, rsv.w, data)
-
-	// convert encoded data to []*C.char
-	ed := make([](*C.char), rsv.k)
-	for i, v := range encodedData {
-		ed[i] = (*C.char)(unsafe.Pointer(&v[0]))
-	}
-
-	ep := make([](*C.char), rsv.m)
-	for k := 0; k < rsv.m; k++ {
-		v := make([]byte, blockSize)
-		ep[k] = (*C.char)(unsafe.Pointer(&v[0]))
-	}
+	ed, ep, blockSize := prepareDataForEncode(rsv.k, rsv.m, rsv.w, data)
 
 	C.jerasure_matrix_encode(C.int(rsv.k), C.int(rsv.m), C.int(rsv.w),
 		rsv.matrix,
