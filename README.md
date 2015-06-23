@@ -1,1 +1,1 @@
-# Go erasure coding library
+# Go binding for C erasure coding library

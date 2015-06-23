@@ -16,6 +16,11 @@ func getAlignedDataSize(k, w int, dataLen int) int {
 	return ceill(float64(dataLen)/float64(alignmentMultiple)) * alignmentMultiple
 }
 
+// PrepareDataForEncode prepare needed data structure to do encoding
+// it returns three data
+// - encoded data array
+// - encoded parity array
+// - blocksize of the data
 func PrepareDataForEncode(k, m, w int, data []byte) ([](*C.char), [](*C.char), int) {
 	// Calculate data sizes, aligned_data_len guaranteed to be divisible by k
 	dataLen := len(data)
@@ -54,6 +59,8 @@ func PrepareDataForEncode(k, m, w int, data []byte) ([](*C.char), [](*C.char), i
 	return encodedData, ep, blockSize
 }
 
+// PrepareDataForDecode prepare all data needed to do decoding
+// it convert encoded data and encoded parity to data type that ready to be used by cgo
 func PrepareDataForDecode(k, m int, encodedData, encodedParity [][]byte) ([](*C.char), [](*C.char)) {
 	ed := make([](*C.char), k)
 	for i, v := range encodedData {
@@ -66,6 +73,7 @@ func PrepareDataForDecode(k, m int, encodedData, encodedParity [][]byte) ([](*C.
 	return ed, ep
 }
 
+// ConvertResultData convert returned result data (in [](*C.char)) to []byte
 func ConvertResultData(ed [](*C.char), blockSize int) []byte {
 	data := []byte{}
 

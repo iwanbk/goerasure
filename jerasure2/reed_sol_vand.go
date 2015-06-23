@@ -12,6 +12,7 @@ import (
 	"github.com/iwanbk/goerasure/utils"
 )
 
+// ReedSolVand defines struct for jerasure2 reed solomon with vandermonde matrix
 type ReedSolVand struct {
 	matrix (*C.int)
 	k      int
@@ -19,6 +20,7 @@ type ReedSolVand struct {
 	w      int
 }
 
+// NewReedSolVand create ReedSolVand object
 func NewReedSolVand(k, m int) ReedSolVand {
 	rsv := ReedSolVand{
 		k: k,
@@ -29,7 +31,7 @@ func NewReedSolVand(k, m int) ReedSolVand {
 	return rsv
 }
 
-// Encode encodes data using reed solomon
+// Encode encodes data using reed solomon and vandermonde matrix
 func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
 	ed, ep, blockSize := utils.PrepareDataForEncode(rsv.k, rsv.m, rsv.w, data)
 
