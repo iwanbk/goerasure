@@ -73,7 +73,7 @@ func BenchmarkJerasure2Encode10x2x10000(b *testing.B) {
 	benchmarkJerasure2BindingEncode(b, 10, 20, 10000)
 }
 
-func BenchmarkEncode100x20x10000(b *testing.B) {
+func BenchmarkReedSolomonEncode100x20x10000(b *testing.B) {
 	benchmarkReedSolEncode(b, 100, 20, 10000)
 }
 
@@ -81,7 +81,7 @@ func BenchmarkJerasure2100x20x10000(b *testing.B) {
 	benchmarkJerasure2BindingEncode(b, 100, 20, 10000)
 }
 
-func BenchmarkEncode17x3x1M(b *testing.B) {
+func BenchmarkReedSolomonEncode17x3x1M(b *testing.B) {
 	benchmarkReedSolEncode(b, 17, 3, 1024*1024)
 }
 
@@ -90,11 +90,61 @@ func BenchmarkJerasure217x3x1M(b *testing.B) {
 }
 
 // Benchmark 10 data shards and 4 parity shards with 16MB each.
-func BenchmarkEncode10x4x16M(b *testing.B) {
+func BenchmarkReedSolomonEncode10x4x16M(b *testing.B) {
 	benchmarkReedSolEncode(b, 10, 4, 16*1024*1024)
 }
 
 // Benchmark 10 data shards and 4 parity shards with 16MB each.
 func BenchmarkJerasure2Encode10x4x16M(b *testing.B) {
 	benchmarkJerasure2BindingEncode(b, 10, 4, 16*1024*1024)
+}
+
+// Benchmark 5 data shards and 2 parity shards with 1MB each.
+func BenchmarkReedSolomonEncode5x2x1M(b *testing.B) {
+	benchmarkReedSolEncode(b, 5, 2, 1024*1024)
+}
+
+// Benchmark 5 data shards and 2 parity shards with 1MB each.
+func BenchmarkJerasure2Encode5x2x1M(b *testing.B) {
+	benchmarkJerasure2BindingEncode(b, 5, 2, 1024*1024)
+}
+
+// Benchmark 1 data shards and 2 parity shards with 1MB each.
+func BenchmarkReedSolomonEncode10x2x1M(b *testing.B) {
+	benchmarkReedSolEncode(b, 10, 2, 1024*1024)
+}
+
+// Benchmark 1 data shards and 2 parity shards with 1MB each.
+func BenchmarkJerasure2Encode10x2x1M(b *testing.B) {
+	benchmarkJerasure2BindingEncode(b, 10, 2, 1024*1024)
+}
+
+// Benchmark 10 data shards and 4 parity shards with 1MB each.
+func BenchmarkReedSolomonEncode10x4x1M(b *testing.B) {
+	benchmarkReedSolEncode(b, 10, 4, 1024*1024)
+}
+
+// Benchmark 10 data shards and 4 parity shards with 1MB each.
+func BenchmarkJerasure2Encode10x4x1M(b *testing.B) {
+	benchmarkJerasure2BindingEncode(b, 10, 4, 1024*1024)
+}
+
+// Benchmark 50 data shards and 20 parity shards with 1MB each.
+func BenchmarkReedSolomonEncode50x20x1M(b *testing.B) {
+	benchmarkReedSolEncode(b, 50, 20, 1024*1024)
+}
+
+// Benchmark 50 data shards and 20 parity shards with 1MB each.
+func BenchmarkJerasure2Encode50x20x1M(b *testing.B) {
+	benchmarkJerasure2BindingEncode(b, 50, 20, 1024*1024)
+}
+
+// Benchmark 17 data shards and 3 parity shards with 16MB each.
+func BenchmarkReedSolomonEncode17x3x16M(b *testing.B) {
+	benchmarkReedSolEncode(b, 17, 3, 16*1024*1024)
+}
+
+// Benchmark 17 data shards and 3 parity shards with 16MB each.
+func BenchmarkJerasure2Encode17x3x16M(b *testing.B) {
+	benchmarkJerasure2BindingEncode(b, 17, 3, 16*1024*1024)
 }
