@@ -3,7 +3,6 @@ package utils
 import "C"
 
 import (
-	//"fmt"
 	"unsafe"
 )
 
@@ -22,7 +21,7 @@ func getAlignedDataSize(k, w int, dataLen int) int {
 // - encoded data array
 // - encoded parity array
 // - blocksize of the data
-func PrepareDataForEncode(k, m, w int, data []byte) ([](*C.char), [](*C.char), int) {
+func PrepareDataForEncode(k, m, w int, data []byte) ([]*C.char, []*C.char, int) {
 	// Calculate data sizes, aligned_data_len guaranteed to be divisible by k
 	dataLen := len(data)
 	alignedDataLen := getAlignedDataSize(k, w, dataLen)
@@ -42,9 +41,7 @@ func PrepareDataForEncode(k, m, w int, data []byte) ([](*C.char), [](*C.char), i
 		if dataLen > 0 {
 			to := make([]byte, payloadSize)
 			copy(to, data[cursor:cursor+copySize])
-			//fmt.Printf("copy i = %v, cursor = %v, copySize=%v, len (data) = %v\n", i, cursor, copySize, len(data))
 			encodedData[i] = (*C.char)(unsafe.Pointer(&to[0]))
-			//fmt.Printf("len to = %v, dataLen=%v\n", len(to), dataLen)
 		}
 		cursor += copySize
 		dataLen -= copySize
@@ -62,7 +59,7 @@ func PrepareDataForEncode(k, m, w int, data []byte) ([](*C.char), [](*C.char), i
 
 // PrepareDataForDecode prepare all data needed to do decoding
 // it convert encoded data and encoded parity to data type that ready to be used by cgo
-func PrepareDataForDecode(k, m int, encodedData, encodedParity [][]byte) ([](*C.char), [](*C.char)) {
+func PrepareDataForDecode(k, m int, encodedData, encodedParity [][]byte) ([]*C.char, []*C.char) {
 	ed := make([](*C.char), k)
 	for i, v := range encodedData {
 		ed[i] = (*C.char)(unsafe.Pointer(&v[0]))
