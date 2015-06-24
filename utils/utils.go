@@ -3,6 +3,7 @@ package utils
 import "C"
 
 import (
+	//"fmt"
 	"unsafe"
 )
 
@@ -28,7 +29,7 @@ func PrepareDataForEncode(k, m, w int, data []byte) ([](*C.char), [](*C.char), i
 
 	blockSize := alignedDataLen / k
 	payloadSize := blockSize
-	//fmt.Printf("dataLen = %v, alignedDataLen=%v, blockSize=%v,payloadSize=%v\n", dataLen, alignedDataLen, blockSize, payloadSize)
+	//fmt.Printf("k=%v, m=%v,w=%v, dataLen = %v, alignedDataLen=%v, blockSize=%v,payloadSize=%v\n", k, m, w, dataLen, alignedDataLen, blockSize, payloadSize)
 
 	// prepare encoded data
 	encodedData := make([](*C.char), k)
