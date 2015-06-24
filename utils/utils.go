@@ -39,8 +39,7 @@ func PrepareDataForEncode(k, m, w int, data []byte) ([]*C.char, []*C.char, int) 
 			copySize = dataLen
 		}
 		if dataLen > 0 {
-			to := make([]byte, payloadSize)
-			copy(to, data[cursor:cursor+copySize])
+			to := data[cursor : cursor+copySize]
 			encodedData[i] = (*C.char)(unsafe.Pointer(&to[0]))
 		}
 		cursor += copySize
