@@ -33,7 +33,17 @@ func NewReedSolVand(k, m int) ReedSolVand {
 
 // Encode encodes data using reed solomon and vandermonde matrix
 func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
-	ed, ep, blockSize := utils.PrepareDataForEncode(rsv.k, rsv.m, rsv.w, data)
+	edBytes, epBytes, blockSize := utils.PrepareDataForEncode(rsv.k, rsv.m, rsv.w, data)
+
+	ed := make([]*C.char, rsv.k)
+	for i, d := range edBytes {
+		ed[i] = (*C.char)(unsafe.Pointer(&d[0]))
+	}
+
+	ep := make([]*C.char, rsv.m)
+	for i, d := range epBytes {
+		ep[i] = (*C.char)(unsafe.Pointer(&d[0]))
+	}
 
 	C.jerasure_matrix_encode(C.int(rsv.k), C.int(rsv.m), C.int(rsv.w),
 		rsv.matrix,
@@ -41,15 +51,6 @@ func (rsv ReedSolVand) Encode(data []byte) ([][]byte, [][]byte, int, error) {
 		(**C.char)(unsafe.Pointer(&ep[0])),
 		C.int(blockSize))
 
-	// convert back to  [][]byte
-	edBytes := make([][]byte, rsv.k)
-	for i, v := range ed {
-		edBytes[i] = C.GoBytes(unsafe.Pointer(v), C.int(blockSize))
-	}
-	epBytes := make([][]byte, rsv.m)
-	for i, v := range ep {
-		epBytes[i] = C.GoBytes(unsafe.Pointer(v), C.int(blockSize))
-	}
 	return edBytes, epBytes, blockSize, nil
 }
 
