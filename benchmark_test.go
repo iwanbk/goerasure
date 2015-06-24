@@ -52,6 +52,9 @@ func benchmarkJerasure2BindingEncode(b *testing.B, k, m, blockSize int) {
 	data := make([]byte, k*blockSize)
 	fill(data)
 
+	// i put ResetTimer here because the other benchmark lib already receive [][]byte not []byte
+	b.ResetTimer()
+
 	rsv := jerasure2.NewReedSolVand(k, m)
 
 	b.SetBytes(int64(k * blockSize))
