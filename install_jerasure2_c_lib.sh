@@ -3,7 +3,7 @@ mkdir /tmp/jerasure2
 cd /tmp/jerasure2
 
 # install required packages
-sudo apt-get install build-essential autoconf libtool git
+sudo apt-get -y install build-essential autoconf libtool git
 
 # install gf-complete, required by jerasure2
 git clone http://lab.jerasure.org/jerasure/gf-complete.git
